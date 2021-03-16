@@ -36,15 +36,17 @@ class DirWaveLayer1D(keras.layers.Layer):
         :rtype: tensor
 
         """
-        self.bs, self.ox, self.cn = batch.shape.as_list()
+        self.bs = tf.shape(batch)[0]
+        self.ox = tf.shape(batch)[1]
+        self.cn = tf.shape(batch)[2]
         if (self.bs is None) : self.bs = -1
-        self.nx = math.ceil(self.ox / 2)
-        self.qx = math.ceil(self.nx / 2)
+        self.nx = (self.ox + 1) // 2
+        self.qx = (self.nx + 1) // 2
         return self.kernel_function(batch)
     def compute_output_shape(self, input_shape):
         x = input_shape[1]
         cn = input_shape[2]
-        h1 = math.ceil(x / 2)
+        h1 = tf.math.ceil(x / 2)
         out_shape = tf.TensorShape([input_shape[0], h1, 2*cn])
         return(out_shape)
 
@@ -64,11 +66,14 @@ class InvWaveLayer1D(keras.layers.Layer):
         :rtype: tensor
 
         """
-        self.bs, self.nx, self.cn = batch.shape.as_list()
+        self.bs = tf.shape(batch)[0]
+        self.nx = tf.shape(batch)[1]
+        self.cn = tf.shape(batch)[2]
         if (self.bs is None) : self.bs = -1
         self.ox = self.nx * 2
         self.cn = self.cn // 2
         return self.kernel_function(batch)
+
     def compute_output_shape(self, input_shape):
         x = input_shape[1]
         cn = input_shape[2]//2
@@ -102,18 +107,24 @@ class DirWaveLayer2D(keras.layers.Layer):
         :rtype: tensor
 
         """
-        self.bs, self.ox, self.oy, self.cn = batch.shape.as_list()
+        self.bs = tf.shape(batch)[0]
+        self.ox = tf.shape(batch)[1]
+        self.oy = tf.shape(batch)[2]
+        self.cn = tf.shape(batch)[3]
         if (self.bs is None) : self.bs = -1
-        self.nx, self.ny = map(lambda x: math.ceil(x / 2), [self.ox, self.oy])
-        self.qx, self.qy = map(lambda x: math.ceil(x / 2), [self.nx, self.ny])
+        self.nx = (self.ox + 1) // 2
+        self.ny = (self.oy + 1) // 2
+        self.qx = (self.nx + 1) // 2
+        self.qy = (self.ny + 1) // 2
         return self.kernel_function(batch)
+
     def compute_output_shape(self, input_shape):
         bs = input_shape[0]
         x = input_shape[1]
         y = input_shape[2]
         cn = input_shape[3]
-        h1 = math.ceil(x / 2)
-        h2 = math.ceil(y / 2)
+        h1 = (x + 1) // 2
+        h2 = (y + 1) // 2
         out_shape = tf.TensorShape([bs, h1, h2, 4*cn])
         return(out_shape)
     
@@ -137,7 +148,10 @@ class InvWaveLayer2D(keras.layers.Layer):
         :rtype: tensor
 
         """
-        self.bs, self.nx, self.ny, self.cn = batch.shape.as_list()
+        self.bs = tf.shape(batch)[0]
+        self.nx = tf.shape(batch)[1]
+        self.ny = tf.shape(batch)[2]
+        self.cn = tf.shape(batch)[3]
         if (self.bs is None) : self.bs = -1
         self.cn = self.cn // 4
         self.ox = self.nx * 2
